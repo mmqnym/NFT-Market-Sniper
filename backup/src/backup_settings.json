@@ -1,0 +1,14 @@
+{
+    "BOT_TOKEN": "Your Token",
+    "OWNER_ID": 0,
+    "CRONOSCAN_API_KEY": "Your Key",
+    "SYSTEM_LOG_CHANNEL_ID": 0,
+    "FLOOR_TRACKER_CHANNEL_ID": 0,
+    "MINT_TRACKER_CHANNEL_ID": 0,
+    "HELLO_AND_BYE_IMG_URL": "https://i.imgur.com/lzKSIsV.gif",
+    "DONE_IMG_URL": "https://i.imgur.com/xCxFsjT.gif",
+    "CHOOSE_IMG_URL": "https://i.imgur.com/G19yJ47.png",
+    "ERROR_IMG_URL": "https://i.imgur.com/88pZvr4.gif",
+    "FLOOR_CHANGE_IMG_URL": "https://i.imgur.com/9JX1bXD.gif",
+    "FISHING_IMG_URL": "https://i.imgur.com/JdA9V2w.png"
+}
