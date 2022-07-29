@@ -1,0 +1,6 @@
+discord.py==1.7.3
+PyMySQL==1.0.2
+pyppeteer==1.0.2
+pyppeteer_stealth==2.7.3
+requests==2.27.1
+py-cord==2.0.0rc1
