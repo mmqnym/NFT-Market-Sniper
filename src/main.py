@@ -1087,8 +1087,8 @@ async def track_floor_price():
             await channel.send( content = f'地板價更新通知! {job.mention_target}',
                                 file = file, embed = embed, view = view )
 
-            try: 
-                os.remove( screenshot_path ) 
+            try:
+                os.remove( f'{os.getcwd()}/{screenshot_path}' ) 
                 MAIN_LOGGER.debug( f'{screenshot_path} 已被系統刪除!' )
             # try
             except OSError as e: 
