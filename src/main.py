@@ -261,7 +261,7 @@ def task_loop( mode:str ) -> None:
 
 @bot.event
 async def on_ready() -> None:
-    global CFG, SCHEDULER, first_exec, MAIN_LOGGER
+    global CFG, SCHEDULER, first_exec, MAIN_LOGGER, TRACKER
 
     MAIN_LOGGER.info( f'已連結官方伺服器.. 目前登入身份：{bot.user}' )
     channel = ''
@@ -282,6 +282,8 @@ async def on_ready() -> None:
         return
     # except
 
+    if not TRACKER.browser_is_running:
+        await TRACKER.launch_browser()
     task_loop( 'start' )
 
 # on_ready()
@@ -881,7 +883,7 @@ async def stop_floor_tracker_task( ctx:discord.ApplicationContext ):
 @commands.is_owner()
 async def shutdown( ctx:discord.ApplicationContext ):
     ''' Shutdown this bot. '''
-    global CFG, SCHEDULER, MAIN_LOGGER
+    global CFG, SCHEDULER, MAIN_LOGGER, TRACKER
 
     embed = make_embed( description = '本服務將於 5 秒後停機，暫停使用。', color = dc_color( 'purple' ) )
     sent_msg = await ctx.respond( embed = embed )
@@ -889,6 +891,9 @@ async def shutdown( ctx:discord.ApplicationContext ):
     disconnect_event = SCHEDULER.rest()
     MAIN_LOGGER.info( disconnect_event )
     task_loop( 'stop' )
+
+    if TRACKER.browser_is_running:
+        await TRACKER.close_browser()
 
     await asyncio.sleep( 5 )
 
@@ -925,9 +930,12 @@ async def on_application_command_error( ctx:discord.ApplicationContext, error ) 
             waiting_time //= 60
             await ctx.respond( f'{ctx.author.mention} 指令冷卻中，' +
                                f'請等待 {waiting_time // 60} 小時 {waiting_time % 60} 分後再試。' )
+        
         return
+    # elif
 
-    raise error
+    else:
+        raise error
 # on_application_command_error()
 
 
@@ -958,6 +966,7 @@ async def track_mint_status():
                 error_times_on_tm = 0
                 track_mint_status.stop()
                 MAIN_LOGGER.error( f'Cronos API 連續多次請求失敗，已停止本任務!' )
+                return
             # if
         # if
         else:
@@ -985,6 +994,7 @@ async def track_mint_status():
                 embed = make_embed( description = 'Mint 數量無法更新至資料庫，任務已終止。', color = dc_color( 'red' ),
                                     thumbnail_url = CFG.get_error_img_url() )
                 await channel.send( embed = embed )
+                return
             # if
 
             mint_out = True if tracker.cur_supply == tracker.total_supply else False
@@ -1015,6 +1025,7 @@ async def track_mint_status():
                     await channel.send( embed = embed, view = view )
                     MAIN_LOGGER.warning( reason )
                     track_mint_status.stop()
+                    return
                 # if
 
                 else:
@@ -1054,6 +1065,7 @@ async def track_floor_price():
                 error_times_on_fp = 0
                 track_mint_status.stop()
                 MAIN_LOGGER.error( f'爬蟲連續多次請求失敗，已停止本任務!' )
+                return
             # if
         # if
         else:
@@ -1072,6 +1084,7 @@ async def track_floor_price():
                                   description = '地板價無法更新至資料庫，任務已終止。',
                                   color = dc_color( 'red' ),
                                   thumbnail_url = CFG.get_error_img_url() )
+                return
             # if
 
             file = discord.File( screenshot_path )
@@ -1086,16 +1099,16 @@ async def track_floor_price():
             view.add_item( check_button )
             await channel.send( content = f'地板價更新通知! {job.mention_target}',
                                 file = file, embed = embed, view = view )
-
-            try:
-                os.remove( f'{os.getcwd()}/{screenshot_path}' ) 
-                MAIN_LOGGER.debug( f'{screenshot_path} 已被系統刪除!' )
-            # try
-            except OSError as e: 
-                MAIN_LOGGER.warning( f'{screenshot_path} 無法被系統刪除!: {e}' )  
         # if
-        
+
+        try:
+            os.remove( f'{os.getcwd()}/{screenshot_path}' ) 
+            MAIN_LOGGER.debug( f'{screenshot_path} 已被系統刪除!' )
+        # try
+        except OSError as e: 
+            MAIN_LOGGER.warning( f'{screenshot_path} 無法被系統刪除!: {e}' )
     # for
+    
 # track_floor_price()
 
 if __name__ == '__main__':

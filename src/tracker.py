@@ -11,8 +11,13 @@ class Tracker:
         if cronos_api_key is None:
             raise ValueError( 'You need to set up cronos api-key.' )
         self.__cronos_api_key = cronos_api_key
+        self.browser_is_running = False
+        self.__browser = None
+        self.__page = None
+
+        # For Cronos API only, don't set this in pyppeteer.
         self.__headers = { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
-                           'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.115 Safari/537.36' }
+                                         'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.115 Safari/537.36' }
         self.__erc721_floor_price_cls = '.sc-4388aed4-1.fyzfJG'
         self.__erc1155_floor_price_cls = '.fs-3.ms-1'
         self.__logger = EnvLogger( 'Tracker.cls' )
@@ -32,20 +37,46 @@ class Tracker:
         else:
             return ( '721', url )
     # __is_erc1155()
+
+    async def launch_browser( self ) -> None:
+        if self.browser_is_running:
+            self.__logger.warning( 'Browser 已處於執行狀態。' )
+            return
+        # if
+
+        self.__browser = await launch( headless = True,
+                                       executablePath = f'{os.getcwd()}\chromium\chrome.exe',
+                                       args = ['--start-maximized', '--no-sandbox', '--disable-infobars'],
+                                       autoClose = False )
+        self.__page = await self.__browser.newPage()
+        await self.__page.setViewport( {'width': 1680, 'height': 1350} )
+        await self.__page.evaluateOnNewDocument( 'delete navigator.__proto__.webdriver ;' )
+        await self.__page.setUserAgent( 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+                                        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36' )
+        await stealth( self.__page )
+        self.browser_is_running = True
+    # launch_browser()
+
+    async def close_browser( self ) -> None:
+        if not self.browser_is_running:
+            self.__logger.warning( 'Browser 已處於未啟用狀態。' )
+            return
+        # if
+
+        await self.__browser.close()
+        self.browser_is_running = False
+    # close_browser()
     
     async def track_floor( self, url:str ) -> Tuple[str, str]:
         '''
         Using url to get token type and floor price of the collection on Ebisu's bay.\n
         return ( erc_type, price )
         '''
-        browser = await launch( headless = True,
-                                executablePath = f'{os.getcwd()}\chromium\chrome.exe',
-                                args = ['--start-maximized', '--no-sandbox', '--disable-infobars'] )
-        page = await browser.newPage()
-        await page.evaluateOnNewDocument( 'delete navigator.__proto__.webdriver ;' )
-        await page.setUserAgent( 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' +
-                                 'Chrome/98.0.4758.102 Safari/537.36' )
-        await stealth( page )
+
+        if not self.browser_is_running:
+            raise RuntimeError( 'Browser not lauched.' )
+
+        page = self.__page
 
         ( erc_type, url ) = self.__is_erc1155( url )
 
@@ -60,13 +91,11 @@ class Tracker:
             floor_price = await ( await element.getProperty( 'textContent' )).jsonValue()
             floor_price = floor_price.replace( ' CRO', '' )
 
-            await browser.close()
             return ( erc_type, floor_price )
         # try
 
         except Exception as e:
-            self.__logger.error( e )
-            await browser.close()
+            self.__logger.warning( e )
             return ( '', '' )
         # except
     # track_floor()
@@ -78,16 +107,10 @@ class Tracker:
         return ( screenshot path, floor price )
         '''
 
-        browser = await launch( headless = True,
-                                #defaultViewport = None,
-                                executablePath = f'{os.getcwd()}\chromium\chrome.exe',
-                                args = ['--start-maximized', '--no-sandbox', '--disable-infobars'] )
-        page = await browser.newPage()
-        await page.setViewport( {'width': 1720, 'height': 1350} )
-        await page.evaluateOnNewDocument( 'delete navigator.__proto__.webdriver ;' )
-        await page.setUserAgent( 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ' +
-                                 'Chrome/98.0.4758.102 Safari/537.36' )
-        await stealth( page )
+        if not self.browser_is_running:
+            raise RuntimeError( 'Browser not lauched.' )
+
+        page = self.__page
         
         try:                               
             if erc_type == '721':
@@ -100,7 +123,7 @@ class Tracker:
                 # await element.hover()
                 series = url.replace( 'https://app.ebisusbay.com/collection/', '' )
                 await page.screenshot( { 'path': f'screenshot/{series}.png', 'fullPage': False} )
-                await browser.close()
+
                 return ( f'screenshot/{series}.png', floor_price )
             # if
             else: # for now is '1155'
@@ -110,15 +133,14 @@ class Tracker:
                 element = await page.waitForSelector( self.__erc1155_floor_price_cls, timeout = 6000 )
                 floor_price = await ( await element.getProperty( 'textContent' )).jsonValue()
                 floor_price = floor_price.replace( ' CRO', '' )
-                await browser.close()
+
                 return ( '', floor_price )
             # else
             
         # try
 
         except Exception as e:
-            self.__logger.error( e )
-            await browser.close()
+            self.__logger.warning( e )
             return ( '', '' )
         # except
     # track_with_rank()
@@ -148,7 +170,7 @@ class Tracker:
         '''
         url = ( 'https://api.cronoscan.com/api?module=stats&action=tokensupply&' +
                 f'contractaddress={contrats_addr}&apikey={self.__cronos_api_key}' )
-        
+  
         try:
             response = requests.get( url, headers = self.__headers, timeout = 5 )
             result = ( json.loads( response.text ) ).get( 'result' )
