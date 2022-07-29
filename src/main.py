@@ -27,7 +27,7 @@ TRACKER = None
 ''' Check bot is first excution. '''
 first_exec = False
 
-MAIN_LOGGER = EnvLogger( 'main.mod' )
+MAIN_LOGGER = EnvLogger( 'main.mod', 'info' )
 
 bot = discord.Bot( intents = discord.Intents.all(),
                    owner_id = CFG.get_owner_id(),
@@ -39,9 +39,9 @@ def main() -> None:
     ''' Start from here '''
     global CFG, SCHEDULER, TRACKER, MAIN_LOGGER
 
-    ( ok, reason ) = CFG.init()
+    ( success, reason ) = CFG.init()
 
-    if ( ok ):
+    if ( success ):
         bot_token = CFG.get_bot_token()
 
         if ( bot_token == 'Your Token' or CFG.get_owner_id() == 0 or
@@ -54,9 +54,9 @@ def main() -> None:
         TRACKER = Tracker( CFG.get_cronoscan_api_key() )
 
         MAIN_LOGGER.info( '開始連線資料庫...' )
-        ( ok, reason ) = SCHEDULER.start()
+        ( success, reason ) = SCHEDULER.start()
 
-        if not ok:
+        if not success:
             MAIN_LOGGER.critical( reason )
             return
         # while
@@ -97,88 +97,6 @@ def main() -> None:
     else:
         MAIN_LOGGER.critical( f'機器人初始化失敗，請重新啟動: {reason}' )
 # main()
-
-
-### Will be deprecated in the next version, use make_embed instead.
-async def send_embed( sending_mode:str, ctx:'discord.ApplicationContext' = None,
-                      channel:'discord.TextChannel' = None, sent_msg:'discord.Msg' = None,
-                      description = None, title:str = None, color:discord.Colour = None, 
-                      is_local_image:bool = False, image_url:str = None, file:'discord.File' = None,
-                      thumbnail_url:str = None, more_fields:Optional[List[list]] = None ) -> 'discord.Msg':
-    ''' 
-    Send / Respond / Edit a discord embed message to a channel.\n
-    discord.Msg parameter means discord.Message / discord.Interaction / ... about Message object.
-    '''
-
-    if sending_mode.lower() == 'edit' and sent_msg is None:
-        raise Exception( 'There is no disscord.Message object while sending_mode is \'edit\'!' )
-
-    if ( sending_mode == 'respond' or sending_mode == 'send' ) and ctx is None:
-        raise Exception( 'discord.ApplicationContext object is required while sending_mode is' + 
-                         '\'send\' or \'respond\'!' )
-    
-    if sending_mode == 'channel' and channel is None:
-        raise Exception( 'There is no disscord.TextChannel object while sending_mode is \'channel\'!' )
-
-    if ( is_local_image and 'attachment://' not in image_url ) and file is None:
-        raise Exception( 'Local image flag is Set, but not match format or file is not submitted.' )
-
-    t_title = ''
-    t_description = ''
-
-    if not ( title is None ):
-        t_title = title
-
-    if not ( description is None ):
-        t_description = description
-
-    t_embed = discord.Embed( title = t_title, description = t_description, color = color )
-    t_embed.set_author( name = 'EB Extend BOT',
-                        url = 'https://twitter.com/0xmimiQ',
-                        icon_url = 'https://i.imgur.com/DmV9HWw.png' )
-    
-    if not ( thumbnail_url is None or thumbnail_url == '' ):
-        t_embed.set_thumbnail( url = thumbnail_url )
-
-    if not ( more_fields is None ):
-        for field in more_fields:
-            t_embed.add_field( name = field[0], value = field[1], inline = field[2] )
-    # if
-
-    if not ( image_url is None ):
-        t_embed.set_image( url = image_url )
-
-    t_embed.timestamp = datetime.now()
-    t_embed.set_footer( text = 'Ebisu\'s Extend Bot' )
-
-    if sending_mode.lower() == 'respond':
-        if file is None:
-            return await ctx.respond( embed = t_embed )
-        return await ctx.respond( file = file, embed = t_embed )
-    # if    
-    
-    elif sending_mode.lower() == 'edit':
-        if file is None:
-            return await sent_msg.edit_original_message( embed = t_embed )
-        return await sent_msg.edit_original_message( file = file, embed = t_embed )
-    # elif
-
-    elif sending_mode.lower() == 'send':
-        if file is None:
-            return await ctx.channel.send( embed = t_embed )
-        return await ctx.channel.send( file = file, embed = t_embed )
-    # elif
-
-    elif sending_mode.lower() == 'channel':
-        if file is None:
-            return await channel.send( embed = t_embed )
-        return await channel.send( file = file, embed = t_embed )
-    # elif
-
-    else:
-        raise ValueError( 'Not supported embed sending_mode! (support: respond, edit, send)' )
-# send_embed()
-
 
 def make_embed( title:str = None, description = None, color:discord.Colour = None, 
                 is_local_image:bool = False, image_url:str = None, file:'discord.File' = None,
@@ -908,6 +826,8 @@ async def shutdown( ctx:discord.ApplicationContext ):
 
 @bot.event
 async def on_application_command_error( ctx:discord.ApplicationContext, error ) -> None:
+    ''' Discord Application Command Error Handler '''
+
     if isinstance( error, commands.CommandNotFound ):
         return
 
@@ -965,9 +885,9 @@ async def track_mint_status():
             if error_times_on_tm >= 3:
                 error_times_on_tm = 0
                 track_mint_status.stop()
-                MAIN_LOGGER.error( f'Cronos API 連續多次請求失敗，已停止本任務!' )
-                return
+                MAIN_LOGGER.error( f'Cronos API 連續多次請求失敗，已停止本任務!' )   
             # if
+            return
         # if
         else:
             error_times_on_tm = 0
@@ -1059,14 +979,14 @@ async def track_floor_price():
 
         if screenshot_path == '' and new_floor_price == '':
             error_times_on_fp += 1
-            MAIN_LOGGER.warning( f'無法取得:{job.eb_url} 此頁面資訊!' )
+            MAIN_LOGGER.warning( f'無法取得: <{job.eb_url}> 頁面資訊!' )
 
             if error_times_on_fp >= 3:
                 error_times_on_fp = 0
                 track_mint_status.stop()
                 MAIN_LOGGER.error( f'爬蟲連續多次請求失敗，已停止本任務!' )
-                return
             # if
+            return
         # if
         else:
             error_times_on_fp = 0
@@ -1080,35 +1000,49 @@ async def track_floor_price():
             if not success:
                 MAIN_LOGGER.warning( reason )
                 track_floor_price.stop()
-                await send_embed( sending_mode = 'channel', channel = channel,
-                                  description = '地板價無法更新至資料庫，任務已終止。',
-                                  color = dc_color( 'red' ),
-                                  thumbnail_url = CFG.get_error_img_url() )
+                embed = make_embed( description = '地板價無法更新至資料庫，任務已終止。',
+                                  color = dc_color( 'red' ), thumbnail_url = CFG.get_error_img_url() )
+                await channel.send( embed = embed )
                 return
             # if
 
-            file = discord.File( screenshot_path )
+            if job.type == '721':
+                file = discord.File( screenshot_path )
 
-            embed = make_embed( title = '地板價更新! 🔥🔥🔥', color = dc_color( 'l_blue' ),
-                                thumbnail_url = CFG.get_floor_change_img_url(),
-                                more_fields = [['地板價變化', f'`{old_cur_floor}` <:arrow:1002316255736369192> ' +
-                                                             f'`{job.cur_floor}`', False]],
-                                is_local_image = True, image_url = f'attachment://{screenshot_path}' )
-            view = TrackerMsgView()
-            check_button = discord.ui.Button( label = 'Check', style = discord.ButtonStyle.link, url = job.eb_url )
-            view.add_item( check_button )
-            await channel.send( content = f'地板價更新通知! {job.mention_target}',
-                                file = file, embed = embed, view = view )
+                embed = make_embed( title = '地板價更新! (ERC721) 🔥🔥🔥', color = dc_color( 'l_blue' ),
+                                    thumbnail_url = CFG.get_floor_change_img_url(),
+                                    more_fields = [['地板價變化', f'`{old_cur_floor}` <:arrow:1002316255736369192> ' +
+                                                                f'`{job.cur_floor}`', False]],
+                                    is_local_image = True, image_url = f'attachment://{screenshot_path}' )
+                view = TrackerMsgView()
+                check_button = discord.ui.Button( label = 'Check', style = discord.ButtonStyle.link, url = job.eb_url )
+                view.add_item( check_button )
+                await channel.send( content = f'地板價更新通知! {job.mention_target}',
+                                    file = file, embed = embed, view = view )
+            # if
+            else: # For now, it's 1155
+                series = ( job.eb_url ).replace( 'https://app.ebisusbay.com/collection/', '' )
+                embed = make_embed( title = '地板價更新! (ERC1155) 🔥🔥🔥', color = dc_color( 'l_blue' ),
+                                    thumbnail_url = CFG.get_floor_change_img_url(),
+                                    more_fields = [['名稱', series, False],
+                                                   ['地板價變化', f'`{old_cur_floor}` <:arrow:1002316255736369192> ' +
+                                                                f'`{job.cur_floor}`', False]] )
+                view = TrackerMsgView()
+                check_button = discord.ui.Button( label = 'Check', style = discord.ButtonStyle.link, url = job.eb_url )
+                view.add_item( check_button )
+                await channel.send( content = f'地板價更新通知! {job.mention_target}', embed = embed, view = view )
+            # else
         # if
 
-        try:
-            if job.type == '721': # Only type ERC721 has screenshot on the system.
+        if job.type == '721': # Only type ERC721 has screenshot on the system.
+            try:  
                 os.remove( f'{os.getcwd()}/{screenshot_path}' ) 
                 MAIN_LOGGER.debug( f'{screenshot_path} 已被系統刪除!' )
-            # if
-        # try
-        except OSError as e: 
-            MAIN_LOGGER.warning( f'{screenshot_path} 無法被系統刪除!: {e}' )
+                
+            # try
+            except OSError as e: 
+                MAIN_LOGGER.warning( f'{screenshot_path} 無法被系統刪除!: {e}' )
+        # if
     # for
 
 # track_floor_price()

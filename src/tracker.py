@@ -126,7 +126,7 @@ class Tracker:
 
                 return ( f'screenshot/{series}.png', floor_price )
             # if
-            else: # for now is '1155'
+            else: # For now, it's '1155'
                 ( erc_type, url ) = self.__is_erc1155( url )
 
                 await page.goto( url, options = {'timeout': 6000} ) 
@@ -148,7 +148,7 @@ class Tracker:
     def cronos_api_status( self ) -> bool:
         '''
         Check api status, if work return True.
-        return status
+        return ( status )
         '''
         url = ( f'https://api.cronoscan.com/api?module=stats&action=supply&apikey={self.__cronos_api_key}' )
 
