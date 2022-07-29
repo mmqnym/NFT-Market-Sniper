@@ -1102,13 +1102,15 @@ async def track_floor_price():
         # if
 
         try:
-            os.remove( f'{os.getcwd()}/{screenshot_path}' ) 
-            MAIN_LOGGER.debug( f'{screenshot_path} 已被系統刪除!' )
+            if job.type == '721': # Only type ERC721 has screenshot on the system.
+                os.remove( f'{os.getcwd()}/{screenshot_path}' ) 
+                MAIN_LOGGER.debug( f'{screenshot_path} 已被系統刪除!' )
+            # if
         # try
         except OSError as e: 
             MAIN_LOGGER.warning( f'{screenshot_path} 無法被系統刪除!: {e}' )
     # for
-    
+
 # track_floor_price()
 
 if __name__ == '__main__':

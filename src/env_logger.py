@@ -1,9 +1,22 @@
 import logging
 
 class EnvLogger:
-    def __init__( self, name:str ) -> None:
+    def __init__( self, name:str, level:str = 'debug' ) -> None:
         self.__env_logger: logging.Logger = logging.getLogger( name = name )
-        self.__env_logger.setLevel( logging.DEBUG )
+
+        if level.lower() == 'debug':
+            self.__env_logger.setLevel( logging.DEBUG )
+        elif level.lower() == 'info':
+            self.__env_logger.setLevel( logging.INFO )
+        elif level.lower() == 'warning':
+            self.__env_logger.setLevel( logging.WARNING )
+        elif level.lower() == 'error':
+            self.__env_logger.setLevel( logging.ERROR )
+        elif level.lower() == 'critical':
+            self.__env_logger.setLevel( logging.CRITICAL )
+        else:
+            self.__env_logger.setLevel( logging.DEBUG )
+
         handler: logging.StreamHandler = logging.StreamHandler()
         formatter: logging.Formatter = logging.Formatter( '[%(levelname)s] %(module)s.%(funcName)s ' + 
                                                           'says: {%(message)s} ...%(asctime)s' )
