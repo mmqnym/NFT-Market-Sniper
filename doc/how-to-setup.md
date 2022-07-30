@@ -1,5 +1,4 @@
 ## How to setup
----
 > Get Discord bot token with some settings first.
 1. Go https://discord.com/developers/applications to get your bot token.
 2. Make the following settings. (Permissions & Intents)
