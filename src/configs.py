@@ -47,6 +47,7 @@ class Configs:
             self.get_floor_tracker_channel()
             self.get_mint_tracker_channel()
             self.get_cronoscan_api_key()
+            self.get_cmc_api_key()
             self.get_done_img_url()
             self.get_error_img_url()
             self.get_choose_img_url()
@@ -146,6 +147,10 @@ class Configs:
     def get_cronoscan_api_key( self ) -> str:
         return self.__configs.get( 'CRONOSCAN_API_KEY' )
     # get_bot_token()
+
+    def get_cmc_api_key( self ) -> str:
+        return self.__configs.get( 'COINMARKETCAP_API_KEY' )
+    # get_cmc_api_key()
 
     def get_hello_and_bye_img_url( self ) -> str:
         return self.__configs.get( 'HELLO_AND_BYE_IMG_URL' )

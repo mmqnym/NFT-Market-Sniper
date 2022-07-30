@@ -12,6 +12,7 @@ from configs import Configs
 from work_unit import Scheduler
 from tracker import Tracker
 from dc_extend import *
+from cmc_function import CMCFunction
 
 from env_logger import EnvLogger
 
@@ -23,6 +24,9 @@ SCHEDULER = Scheduler()
 
 ''' Track all url in todo list by tracker. '''
 TRACKER = None
+
+''' Caller for CoinMarketCap function. '''
+CMCFUNC = None
 
 ''' Check bot is first excution. '''
 first_exec = False
@@ -37,21 +41,23 @@ bot = discord.Bot( intents = discord.Intents.all(),
 
 def main() -> None:
     ''' Start from here '''
-    global CFG, SCHEDULER, TRACKER, MAIN_LOGGER
+    global CFG, SCHEDULER, TRACKER, CMCFUNC, MAIN_LOGGER
 
     ( success, reason ) = CFG.init()
 
     if ( success ):
         bot_token = CFG.get_bot_token()
 
-        if ( bot_token == 'Your Token' or CFG.get_owner_id() == 0 or
-            CFG.get_system_log_channel() == 0 or CFG.get_cronoscan_api_key() == 'Your Key' ):
+        if ( bot_token == 'Your Token' or CFG.get_owner_id() == 0 or CFG.get_system_log_channel() == 0 or
+             CFG.get_cronoscan_api_key() == 'Your Key' or CFG.get_cmc_api_key() == 'Your Key' ):
             MAIN_LOGGER.critical( '請先在 src/configs.json 中寫入' + 
-                                  'BOT_TOKEN, OWNER_ID, TARGET_CHANNEL_FOR_SYSTEM_LOG, CRONOSCAN_API_KEY 的值' )
+                                  'BOT_TOKEN, OWNER_ID, TARGET_CHANNEL_FOR_SYSTEM_LOG, CRONOSCAN_API_KEY, ' + 
+                                  'COINMARKETCAP_API_KEY 的值' )
             return
         # if
 
         TRACKER = Tracker( CFG.get_cronoscan_api_key() )
+        CMCFUNC = CMCFunction( CFG.get_cmc_api_key() )
 
         MAIN_LOGGER.info( '開始連線資料庫...' )
         ( success, reason ) = SCHEDULER.start()
@@ -98,7 +104,7 @@ def main() -> None:
         MAIN_LOGGER.critical( f'機器人初始化失敗，請重新啟動: {reason}' )
 # main()
 
-def make_embed( title:str = None, description = None, color:discord.Colour = None, 
+def make_embed( title:str = None, description:str = None, color:discord.Colour = None, 
                 is_local_image:bool = False, image_url:str = None, file:'discord.File' = None,
                 thumbnail_url:str = None, more_fields:Optional[List[list]] = None ) -> 'discord.Embed':
     ''' 
@@ -209,10 +215,12 @@ async def on_ready() -> None:
 
 ''' Discord Commands Below'''
 
-sys = bot.create_group( name = 'sys', description = 'System command' )
-set = bot.create_group( name = 'set', description = 'Set tracker' )
-delete = bot.create_group( name = 'delete', description = 'Delete tracker' )
-list = bot.create_group( name = 'list', description = 'List tracker(s)' )
+''' Command groups '''
+sys = bot.create_group( name = 'sys', description = 'System command.' )
+set = bot.create_group( name = 'set', description = 'Set tracker.' )
+delete = bot.create_group( name = 'delete', description = 'Delete tracker.' )
+list = bot.create_group( name = 'list', description = 'List tracker(s).' )
+convert = bot.create_group( name = 'convert', description = 'Convert currencies.' )
 
 track_type = [
     OptionChoice( name = 'system', value = 'system' ),
@@ -823,6 +831,66 @@ async def shutdown( ctx:discord.ApplicationContext ):
     MAIN_LOGGER.info( '機器人已關機' )
     
 # shutdown()
+
+@convert.command( name = 'to_usd', description = 'Convert CRO value to USD.' )
+@commands.cooldown( 1, 15, commands.BucketType.user )
+async def convert_cro( ctx:discord.ApplicationContext,
+                       cro:Option( float, 'Enter a value in CRO you want.' ) ) -> None:
+    ''' Convert CRO value to USD. '''
+    global CMCFUNC
+
+    if cro < 0:
+        embed = make_embed( description = '非法數值，請勿輸入負數!', color = dc_color( 'red' ) )
+
+    elif cro == 0:
+        embed = make_embed( description = '`0 CRO` <:arrow:1002316255736369192> `0 USD`', color = dc_color( 'l_blue' ) )
+    
+    else:
+        price = CMCFUNC.cro_to_usd()
+
+        if price == -1:
+            embed = make_embed( description = '無法從 CMC API 獲取最新價格資訊，請使用 `/sys status` 檢查狀態',
+                                color = dc_color( 'red' ) )
+        # if
+        else:
+            price *= cro
+            embed = make_embed( description = f'`{cro} CRO` <:arrow:1002316255736369192> `{price} USD`',
+                                color = dc_color( 'l_blue' ))
+        # else
+    # else
+
+    await ctx.respond( embed = embed )
+# convert_cro()
+
+@convert.command( name = 'to_cro', description = 'Convert USD value to CRO.' )
+@commands.cooldown( 1, 15, commands.BucketType.user )
+async def convert_usd( ctx:discord.ApplicationContext,
+                       usd:Option( float, 'Enter a value in USD you want.' ) ) -> None:
+    ''' Convert USD value to CRO. '''
+    global CMCFUNC
+
+    if usd < 0:
+        embed = make_embed( description = '非法數值，請勿輸入負數!', color = dc_color( 'red' ) )
+
+    elif usd == 0:
+        embed = make_embed( description = '`0 USD` <:arrow:1002316255736369192> `0 CRO`', color = dc_color( 'l_blue' ) )
+    
+    else:
+        price = CMCFUNC.usd_to_cro()
+
+        if price == -1:
+            embed = make_embed( description = '無法從 CMC API 獲取最新價格資訊，請使用 `/sys status` 檢查狀態',
+                                color = dc_color( 'red' ) )
+        # if
+        else:
+            price *= usd
+            embed = make_embed( description = f'`{usd} USD` <:arrow:1002316255736369192> `{price} CRO`',
+                                color = dc_color( 'l_blue' ))
+        # else
+    # else
+
+    await ctx.respond( embed = embed )
+# convert_usd()
 
 @bot.event
 async def on_application_command_error( ctx:discord.ApplicationContext, error ) -> None:

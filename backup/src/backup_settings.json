@@ -2,6 +2,7 @@
     "BOT_TOKEN": "Your Token",
     "OWNER_ID": 0,
     "CRONOSCAN_API_KEY": "Your Key",
+    "COINMARKETCAP_API_KEY": "Your Key",
     "SYSTEM_LOG_CHANNEL_ID": 0,
     "FLOOR_TRACKER_CHANNEL_ID": 0,
     "MINT_TRACKER_CHANNEL_ID": 0,
