@@ -19,7 +19,7 @@ class Configs:
     def init( self ) -> Tuple[bool, str]:
         ''' 
         Initialize configs from configs.json.\n
-        return ( status, reason )
+        return ( success, reason )
         '''
         try:
             with open( 'settings.json', 'r', encoding = 'utf-8' ) as f:
@@ -62,7 +62,7 @@ class Configs:
     def __update( self ) -> Tuple[bool, str]:
         '''
         Write new configs to configs.json when configs is changed.\n
-        return ( status, reason )
+        return ( success, reason )
         '''
 
         try:
@@ -78,17 +78,17 @@ class Configs:
     def set_system_log_channel( self, channel:str ) -> Tuple[bool, str]:
         '''
         Set channel for system log.\n
-        return ( status, reason )
+        return ( success, reason )
         '''
         
         rollback = self.__configs.get( 'SYSTEM_LOG_CHANNEL_ID' )
         self.__configs['SYSTEM_LOG_CHANNEL_ID'] = channel
-        ( status, reason ) = self.__update()
+        ( success, reason ) = self.__update()
 
-        if not status:
+        if not success:
             self.__configs['SYSTEM_LOG_CHANNEL_ID'] = rollback
 
-        return ( status, reason )
+        return ( success, reason )
     # set_system_log_channel()
 
     def get_system_log_channel( self ) -> str:
@@ -98,17 +98,17 @@ class Configs:
     def set_floor_tracker_channel( self, channel:str ) -> Tuple[bool, str]:
         '''
         Set channel for sending floor price infomation.\n
-        return ( status, reason )
+        return ( success, reason )
         '''
 
         rollback = self.__configs.get( 'FLOOR_TRACKER_CHANNEL_ID' )
         self.__configs['FLOOR_TRACKER_CHANNEL_ID'] = channel
-        ( status, reason ) = self.__update()
+        ( success, reason ) = self.__update()
 
-        if not status:
+        if not success:
             self.__configs['FLOOR_TRACKER_CHANNEL_ID'] = rollback
 
-        return ( status, reason )
+        return ( success, reason )
     # set_floor_tracker_channel()
 
     def get_floor_tracker_channel( self ) -> str:
@@ -119,17 +119,17 @@ class Configs:
     def set_mint_tracker_channel( self, channel:str ) -> Tuple[bool, str]:
         '''
         Set channel for sending mint infomation. ( current total supply )\n
-        return ( status, reason )
+        return ( success, reason )
         '''
 
         rollback = self.__configs.get( 'MINT_TRACKER_CHANNEL_ID' )
         self.__configs['MINT_TRACKER_CHANNEL_ID'] = channel
-        ( status, reason ) = self.__update()
+        ( success, reason ) = self.__update()
 
-        if not status:
+        if not success:
             self.__configs['MINT_TRACKER_CHANNEL_ID'] = rollback
 
-        return ( status, reason )
+        return ( success, reason )
     # set_mint_tracker_channel()
 
     def get_mint_tracker_channel( self ) -> str:
