@@ -683,7 +683,6 @@ async def wish( ctx:discord.ApplicationContext ) -> None:
     await ctx.send_modal( wishform )
 # wish()
 
-##### status: not completed
 @sys.command( name = 'status', description = 'Check the bot status.' )
 @commands.cooldown( 1, 60, commands.BucketType.user )
 async def status( ctx:discord.ApplicationContext ):
@@ -692,8 +691,9 @@ async def status( ctx:discord.ApplicationContext ):
 
     # cronos api, cmc api
     cronos_api_status = TRACKER.cronos_api_status()
-    cmc_api = True # not completed
-    service_status = cronos_api_status and cmc_api and track_mint_status.is_running() and track_floor_price.is_running()
+    cmc_api_status = True if TRACKER.usd_to_cro() != -1 else False
+    service_status = ( cronos_api_status and cmc_api_status and track_mint_status.is_running() and 
+                       track_floor_price.is_running() )
 
     status_color = dc_color( 'green' ) if service_status else dc_color( 'red' )
     desc = ':green_circle: 正常運作中。' if service_status else ':red_circle: 以下服務連線不穩或中斷。'
@@ -701,7 +701,7 @@ async def status( ctx:discord.ApplicationContext ):
 
     if not cronos_api_status:
         desc += '\nCronos API'
-    if not cmc_api:
+    if not cmc_api_status:
         desc += '\nCMC API'
     if not track_mint_status.is_running():
         desc += '\nTask: Mint tracker'
