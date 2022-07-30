@@ -13,6 +13,7 @@
 
 ## Demonstration
 > The main tasks are to automatically track floor price changes and mint amount changes.
+
 ![](doc/img/demo_floor_change.png)
 
 <br />
