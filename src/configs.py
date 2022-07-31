@@ -75,7 +75,7 @@ class Configs:
             return ( False, f'更新 configs 失敗: {e}' )
     # __update()
 
-    def set_system_log_channel( self, channel:str ) -> Tuple[bool, str]:
+    def set_system_log_channel( self, channel:int ) -> Tuple[bool, str]:
         '''
         Set channel for system log.\n
         return ( success, reason )
@@ -91,11 +91,11 @@ class Configs:
         return ( success, reason )
     # set_system_log_channel()
 
-    def get_system_log_channel( self ) -> str:
+    def get_system_log_channel( self ) -> int:
         return self.__configs.get( 'SYSTEM_LOG_CHANNEL_ID' )
     # get_system_log_channel()
 
-    def set_floor_tracker_channel( self, channel:str ) -> Tuple[bool, str]:
+    def set_floor_tracker_channel( self, channel:int ) -> Tuple[bool, str]:
         '''
         Set channel for sending floor price infomation.\n
         return ( success, reason )
@@ -111,12 +111,12 @@ class Configs:
         return ( success, reason )
     # set_floor_tracker_channel()
 
-    def get_floor_tracker_channel( self ) -> str:
+    def get_floor_tracker_channel( self ) -> int:
         ''' return binded floor price tracker channel '''
         return self.__configs.get( 'FLOOR_TRACKER_CHANNEL_ID' )
     # get_floor_tracker_channel()
 
-    def set_mint_tracker_channel( self, channel:str ) -> Tuple[bool, str]:
+    def set_mint_tracker_channel( self, channel:int ) -> Tuple[bool, str]:
         '''
         Set channel for sending mint infomation. ( current total supply )\n
         return ( success, reason )
@@ -132,7 +132,7 @@ class Configs:
         return ( success, reason )
     # set_mint_tracker_channel()
 
-    def get_mint_tracker_channel( self ) -> str:
+    def get_mint_tracker_channel( self ) -> int:
         return self.__configs.get( 'MINT_TRACKER_CHANNEL_ID' )
     # get_mint_tracker_channel()
 
@@ -140,7 +140,7 @@ class Configs:
         return self.__configs.get( 'BOT_TOKEN' )
     # get_bot_token()
 
-    def get_owner_id( self ) -> str:
+    def get_owner_id( self ) -> int:
         return self.__configs.get( 'OWNER_ID' )
     # get_owner_id()
 
