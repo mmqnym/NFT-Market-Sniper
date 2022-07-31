@@ -1,6 +1,8 @@
 # Eb Supporter
-![](https://shields.io/badge/BUILD-PASSING-green?logo=github&style=for-the-badge) ![](https://shields.io/badge/VERSION-2.0-blue?logo=github&style=for-the-badge) 
+![](https://shields.io/badge/BUILD-PASSING-green?logo=github&style=for-the-badge) 
+![](https://shields.io/badge/VERSION-2.0-blue?logo=github&style=for-the-badge) 
 ![](https://shields.io/badge/PYTHON-3.8-blue?logo=python&style=for-the-badge)
+
 > This bot helps people to get more infomations automatically on Ebisu's bay (A NFT market on Cronos).
 
 <br />
@@ -34,4 +36,4 @@
 <br />
 
 ## License
-[All Rights Reserved](https://github.com/0xmimiQ/eb_supporter/blob/main/LICENSE)
+[Apache License 2.0](LICENSE)
