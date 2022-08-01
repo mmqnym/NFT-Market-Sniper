@@ -1,6 +1,6 @@
 ## How to setup
 > Get Discord bot token with some settings first.
-1. Go https://discord.com/developers/applications to get your bot token.
+1. Go to https://discord.com/developers/applications to get your bot token.
 2. Make the following settings. (Permissions & Intents)
 
 ![Used Permissions](img/Permissions.png)
@@ -26,6 +26,12 @@
     "":"..."
 }
 ```
+
+<br />
+
+> Set up Chromium.
+1. Go to https://www.chromium.org/getting-involved/download-chromium/ to download the latest version of the corresponding OS.
+2. Put the downloaded package directly into `src` and rename it to `chronium`.
 
 <br />
 
