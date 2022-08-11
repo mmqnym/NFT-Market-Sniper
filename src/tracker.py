@@ -18,7 +18,7 @@ class Tracker:
         # For Cronos API only, don't set this in pyppeteer.
         self.__headers = { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
                                          'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.115 Safari/537.36' }
-        self.__erc721_floor_price_cls = '.sc-4388aed4-1.fyzfJG'
+        self.__erc721_floor_price_cls = '.sc-db6d9b6-1.JpQbs'
         self.__erc1155_floor_price_cls = '.fs-3.ms-1'
         self.__logger = EnvLogger( 'Tracker.cls' )
     # __init__()

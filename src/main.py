@@ -691,7 +691,7 @@ async def status( ctx:discord.ApplicationContext ):
 
     # cronos api, cmc api
     cronos_api_status = TRACKER.cronos_api_status()
-    cmc_api_status = True if TRACKER.usd_to_cro() != -1 else False
+    cmc_api_status = True if CMCFUNC.usd_to_cro() != -1 else False
     service_status = ( cronos_api_status and cmc_api_status and track_mint_status.is_running() and 
                        track_floor_price.is_running() )
 
@@ -719,7 +719,6 @@ async def start_mint_tracker_task( ctx:discord.ApplicationContext ):
     ''' Start mint_tracker executing task. '''
     global CFG
 
-    channel = await bot.fetch_channel( CFG.get_system_log_channel() )
     desc = ''
 
     if not track_mint_status.is_running():
@@ -733,7 +732,7 @@ async def start_mint_tracker_task( ctx:discord.ApplicationContext ):
     # else
 
     embed = make_embed( description = desc, color = color, thumbnail_url = CFG.get_done_img_url() )
-    await channel.send( embed = embed )
+    await ctx.respond( embed = embed )
 # start_mint_tracker_task()
 
 @sys.command( name = 'stop_mint_tracker_task', description = 'Stop executing mint tracker task.' )
@@ -742,7 +741,6 @@ async def stop_mint_tracker_task( ctx:discord.ApplicationContext ):
     ''' Stop mint_tracker executing task. '''
     global CFG
 
-    channel = await bot.fetch_channel( CFG.get_system_log_channel() )
     desc = ''
 
     if track_mint_status.is_running():
@@ -756,7 +754,7 @@ async def stop_mint_tracker_task( ctx:discord.ApplicationContext ):
     # else
 
     embed = make_embed( description = desc, color = color, thumbnail_url = CFG.get_done_img_url() )
-    await channel.send( embed = embed )
+    await ctx.respond( embed = embed )
 # stop_mint_tracker_task()
 
 @sys.command( name = 'start_floor_tracker_task', description = 'To execute floor tracker(job) task.' )
@@ -765,7 +763,6 @@ async def start_floor_tracker_task( ctx:discord.ApplicationContext ):
     ''' Start floor_tracker executing task. '''
     global CFG
 
-    channel = await bot.fetch_channel( CFG.get_system_log_channel() )
     desc = ''
 
     if not track_floor_price.is_running():
@@ -779,7 +776,7 @@ async def start_floor_tracker_task( ctx:discord.ApplicationContext ):
     # else
 
     embed = make_embed( description = desc, color = color, thumbnail_url = CFG.get_done_img_url() )
-    await channel.send( embed = embed )
+    await ctx.respond( embed = embed )
 # start_floor_tracker_task()
 
 @sys.command( name = 'stop_floor_tracker_task', description = 'Stop executing mint tracker task.' )
@@ -788,7 +785,6 @@ async def stop_floor_tracker_task( ctx:discord.ApplicationContext ):
     ''' Stop floor_tracker executing task. '''
     global CFG
 
-    channel = await bot.fetch_channel( CFG.get_system_log_channel() )
     desc = ''
 
     if track_floor_price.is_running():
@@ -802,7 +798,7 @@ async def stop_floor_tracker_task( ctx:discord.ApplicationContext ):
     # else
 
     embed = make_embed( description = desc, color = color, thumbnail_url = CFG.get_done_img_url() )
-    await channel.send( embed = embed )
+    await ctx.respond( embed = embed )
 # stop_floor_tracker_task()
 
 @sys.command( name = 'shutdown', description = 'Shutdown this bot.' )
