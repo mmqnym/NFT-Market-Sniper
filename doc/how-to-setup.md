@@ -49,14 +49,14 @@ pip install -r requirements.txt
 If you want to use a cloud database, you will need to change the following settings in `connect` function for `SqlDB` object in `work_unit` module to the ones you want.
 ``` python
 self.__db = pymysql.connect( 
-    host = 'localhost',
+    host = "localhost",
     port = 3306,
-    user = 'root', 
+    user = "root", 
     passwd = passwd, 
-    db = 'ebisu_tracker', 
-    charset = 'utf8' 
+    db = "ebisu_tracker", 
+    charset = "utf8" 
 )
-return ( True, '' )
+return ( True, "" )
 ```
 
 <br />
